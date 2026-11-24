@@ -1,0 +1,27 @@
+name: Build Capitol Studio Pro (AU)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-macos-au:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure CMake
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+
+      - name: Build AU Plugin
+        run: cmake --build build --config Release --target CapitolStudioPro_AU --parallel
+
+      - name: Ad-Hoc Codesign AU
+        run: codesign --force --deep --sign - "build/CapitolStudioPro_artefacts/Release/AU/Capitol Studio Pro.component"
+
+      - name: Upload AU Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CapitolStudioPro-AU
+          path: build/CapitolStudioPro_artefacts/Release/AU/Capitol Studio Pro.component
