@@ -81,10 +81,10 @@ void UADVintageLookAndFeel::drawComboBox (juce::Graphics& g, int width, int heig
     g.fillPath (arrow);
 }
 
-void UADVintageLookAndFeel::drawButtonBackground (juce::Graphics& g, juce::Button&,
+void UADVintageLookAndFeel::drawButtonBackground (juce::Graphics& g, juce::Button& button,
                                                   const juce::Colour&, bool isHighlighted, bool isDown)
 {
-    auto area = g.getClipBounds().toFloat().reduced (0.5f);
+    auto area = button.getLocalBounds().toFloat().reduced (0.5f);
     g.setColour (isDown ? juce::Colour (0xffd4a24c) : (isHighlighted ? juce::Colour (0xff3a3529) : juce::Colour (0xff23262d)));
     g.fillRoundedRectangle (area, 4.0f);
     g.setColour (juce::Colour (0xffc99a49));
@@ -105,7 +105,7 @@ void AnalogVuMeter::timerCallback()
     if (showGR)
     {
         const float gr = std::clamp (processor.getCompGrDb(), 0.0f, 20.0f);
-        target = 1.0f - (gr / 20.0f); // 0 dB a la derecha, reducción hacia la izquierda
+        target = 1.0f - (gr / 20.0f);
     }
     else
     {
@@ -153,7 +153,7 @@ void AnalogVuMeter::paint (juce::Graphics& g)
     g.setColour (juce::Colour (0xff2b1f0d));
     g.setFont (juce::Font (juce::FontOptions (9.5f).withStyle ("Bold")));
     g.drawText (showGR ? "GR  dB" : "VU  OUT", glass.reduced (6.0f, 3.0f), juce::Justification::bottomLeft);
-    g.drawText ("-20   -10   -5   0  +3", glass.reduced (8.0f, 4.0f), juce::Justification::topCentre);
+    g.drawText ("-20   -10   -5   0  +3", glass.reduced (8.0f, 4.0f), juce::Justification::centredTop);
 
     // Aguja analógica
     const float needleAngle = juce::jmap (smoothedNeedle, 0.0f, 1.0f, -0.75f, 0.75f);
@@ -177,12 +177,12 @@ void Studio2DRoomPad::paint (juce::Graphics& g)
 {
     auto area = getLocalBounds().toFloat().reduced (2.0f);
 
-    const int roomIdx   = static_cast<int> (*apvts.getRawParameterValue ("room"));
-    const int wallsLive = static_cast<int> (*apvts.getRawParameterValue ("walls"));
-    const int sourceIdx = static_cast<int> (*apvts.getRawParameterValue ("source"));
-    const float micX    = *apvts.getRawParameterValue ("micX");
-    const float micY    = *apvts.getRawParameterValue ("micY");
-    const float sides   = *apvts.getRawParameterValue ("deccaSides");
+    const int roomIdx   = static_cast<int> (apvts.getRawParameterValue ("room")->load());
+    const int wallsLive = static_cast<int> (apvts.getRawParameterValue ("walls")->load());
+    const int sourceIdx = static_cast<int> (apvts.getRawParameterValue ("source")->load());
+    const float micX    = apvts.getRawParameterValue ("micX")->load();
+    const float micY    = apvts.getRawParameterValue ("micY")->load();
+    const float sides   = apvts.getRawParameterValue ("deccaSides")->load();
 
     // Piso arquitectónico de estudio
     juce::ColourGradient floorGrad (juce::Colour (0xff1a1d23), area.getTopLeft(),
@@ -197,7 +197,7 @@ void Studio2DRoomPad::paint (juce::Graphics& g)
     for (float y = area.getY() + 26.0f; y < area.getBottom(); y += 26.0f)
         g.drawHorizontalLine (static_cast<int> (y), area.getX() + 4.0f, area.getRight() - 4.0f);
 
-    // Indicador visual de paredes (Live = brillo dorado, Tight = paneles absorbentes oscuros)
+    // Indicador visual de paredes
     g.setColour (wallsLive ? juce::Colour (0xffc99a49) : juce::Colour (0xff48515e));
     g.drawRoundedRectangle (area, 6.0f, wallsLive ? 2.2f : 1.5f);
 
@@ -381,7 +381,7 @@ void CapitolStudioProEditor::openIRFileChooser()
         {
             audioProcessor.loadCustomIR (file);
             irNameLbl.setText (audioProcessor.getLoadedIRName(), juce::dontSendNotification);
-            chamberBox.setSelectedItemIndex (4, juce::sendNotification); // Cambia a Custom WAV IR
+            chamberBox.setSelectedItemIndex (4, juce::sendNotification);
         }
     });
 }
