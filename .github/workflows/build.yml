@@ -7,9 +7,9 @@ on:
 
 jobs:
   build-macos-au:
-    runs-on: macos-15
+    runs-on: macos-15-intel
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Configure CMake
         run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64"
@@ -21,7 +21,7 @@ jobs:
         run: codesign --force --deep --sign - "build/CapitolStudioPro_artefacts/Release/AU/Capitol Studio Pro.component"
 
       - name: Upload AU Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: CapitolStudioPro-AU
           path: build/CapitolStudioPro_artefacts/Release/AU/Capitol Studio Pro.component
