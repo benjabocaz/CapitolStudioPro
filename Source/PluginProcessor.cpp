@@ -91,8 +91,8 @@ bool CapitolStudioProProcessor::isBusesLayoutSupported (const BusesLayout& layou
 void CapitolStudioProProcessor::updateFilters()
 {
     // 1. Perfil de Monitores (Bruce Swedien Worldizing)
-    const int srcIdx = static_cast<int> (*apvts.getRawParameterValue ("source"));
-    const int monIdx = static_cast<int> (*apvts.getRawParameterValue ("monitorType"));
+    const int srcIdx = static_cast<int> (apvts.getRawParameterValue ("source")->load());
+    const int monIdx = static_cast<int> (apvts.getRawParameterValue ("monitorType")->load());
 
     if (srcIdx == 3) // Monitors
     {
@@ -106,8 +106,8 @@ void CapitolStudioProProcessor::updateFilters()
     }
 
     // 2. Mic Locker + Efecto de Proximidad
-    const int micIdx = static_cast<int> (*apvts.getRawParameterValue ("mic"));
-    const float dist = *apvts.getRawParameterValue ("micY");
+    const int micIdx = static_cast<int> (apvts.getRawParameterValue ("mic")->load());
+    const float dist = apvts.getRawParameterValue ("micY")->load();
     const float proxDb = (1.0f - dist) * 3.5f;
 
     float presFreq = 3500.0f, presDb = 0.0f, airDb = 0.0f;
@@ -125,13 +125,13 @@ void CapitolStudioProProcessor::updateFilters()
     micAir.setHighShelf (9800.0f, airDb);
 
     // 3. Filtros de Consola Británica
-    const float hpfFreq = *apvts.getRawParameterValue ("eqHpf");
+    const float hpfFreq = apvts.getRawParameterValue ("eqHpf")->load();
     if (hpfFreq > 22.0f) eqHpf.setHighPass (hpfFreq, 0.7071f);
     else                 eqHpf.setBypass();
 
-    eqLow.setLowShelf (110.0f, *apvts.getRawParameterValue ("eqLow"));
-    eqMid.setPeak (1400.0f, *apvts.getRawParameterValue ("eqMid"), 0.9f);
-    eqHigh.setHighShelf (8500.0f, *apvts.getRawParameterValue ("eqHigh"));
+    eqLow.setLowShelf (110.0f, apvts.getRawParameterValue ("eqLow")->load());
+    eqMid.setPeak (1400.0f, apvts.getRawParameterValue ("eqMid")->load(), 0.9f);
+    eqHigh.setHighShelf (8500.0f, apvts.getRawParameterValue ("eqHigh")->load());
 
     // 4. Filtro paso banda vintage para cámaras
     chHpf.setHighPass (175.0f, 0.7071f);
@@ -162,23 +162,22 @@ void CapitolStudioProProcessor::processConsoleEQ (juce::AudioBuffer<float>& buff
 
 void CapitolStudioProProcessor::processChamberStage (juce::AudioBuffer<float>& buffer)
 {
-    const int chType   = static_cast<int> (*apvts.getRawParameterValue ("chamberType"));
-    const float chMix  = *apvts.getRawParameterValue ("chamberMix");
-    const float chDec  = *apvts.getRawParameterValue ("chamberDecay");
-    const float chPre  = *apvts.getRawParameterValue ("chamberPreDelay");
-    const float chWid  = *apvts.getRawParameterValue ("chamberWidth");
+    const int chType   = static_cast<int> (apvts.getRawParameterValue ("chamberType")->load());
+    const float chMix  = apvts.getRawParameterValue ("chamberMix")->load();
+    const float chDec  = apvts.getRawParameterValue ("chamberDecay")->load();
+    const float chPre  = apvts.getRawParameterValue ("chamberPreDelay")->load();
+    const float chWid  = apvts.getRawParameterValue ("chamberWidth")->load();
 
     if (chMix <= 0.001f) return;
 
-    // Aplica filtro vintage al envío antes de la cámara
     chamberScratch.setSize (2, buffer.getNumSamples(), false, false, true);
     acousticEngine.processChamber (buffer, chamberScratch, chType, chMix, chDec, chPre, chWid);
 }
 
 void CapitolStudioProProcessor::processCompressorStage (juce::AudioBuffer<float>& buffer)
 {
-    const int compType = static_cast<int> (*apvts.getRawParameterValue ("compType"));
-    const float thresh = *apvts.getRawParameterValue ("compThresh");
+    const int compType = static_cast<int> (apvts.getRawParameterValue ("compType")->load());
+    const float thresh = apvts.getRawParameterValue ("compThresh")->load();
     compressor.process (buffer, compType, thresh);
 }
 
@@ -187,15 +186,15 @@ void CapitolStudioProProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     juce::ScopedNoDenormals noDenormals;
     updateFilters();
 
-    const int modeIdx     = static_cast<int> (*apvts.getRawParameterValue ("mode"));
-    const int sourceIdx   = static_cast<int> (*apvts.getRawParameterValue ("source"));
-    const int roomIdx     = static_cast<int> (*apvts.getRawParameterValue ("room"));
-    const int wallsLive   = static_cast<int> (*apvts.getRawParameterValue ("walls"));
-    const float micX      = *apvts.getRawParameterValue ("micX");
-    const float micY      = *apvts.getRawParameterValue ("micY");
-    const float deccaC    = *apvts.getRawParameterValue ("deccaCenter");
-    const float deccaS    = *apvts.getRawParameterValue ("deccaSides");
-    const float drive     = *apvts.getRawParameterValue ("consoleDrive");
+    const int modeIdx     = static_cast<int> (apvts.getRawParameterValue ("mode")->load());
+    const int sourceIdx   = static_cast<int> (apvts.getRawParameterValue ("source")->load());
+    const int roomIdx     = static_cast<int> (apvts.getRawParameterValue ("room")->load());
+    const int wallsLive   = static_cast<int> (apvts.getRawParameterValue ("walls")->load());
+    const float micX      = apvts.getRawParameterValue ("micX")->load();
+    const float micY      = apvts.getRawParameterValue ("micY")->load();
+    const float deccaC    = apvts.getRawParameterValue ("deccaCenter")->load();
+    const float deccaS    = apvts.getRawParameterValue ("deccaSides")->load();
+    const float drive     = apvts.getRawParameterValue ("consoleDrive")->load();
 
     // 1. Fuente / Monitores (Swedien)
     processSourceAndMonitors (buffer);
@@ -208,7 +207,7 @@ void CapitolStudioProProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     analogStage.process (buffer, drive, sourceIdx == 3);
 
     // 4. Cadena modular reordenable (Consola EQ, Outboard Comp, Cámaras)
-    const int order = static_cast<int> (*apvts.getRawParameterValue ("chainOrder"));
+    const int order = static_cast<int> (apvts.getRawParameterValue ("chainOrder")->load());
     if (order == 0)
     {
         processConsoleEQ (buffer);
@@ -229,7 +228,7 @@ void CapitolStudioProProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     }
 
     // 5. Ganancia de salida y medición VU RMS
-    const float outGain = juce::Decibels::decibelsToGain (*apvts.getRawParameterValue ("outputGain"));
+    const float outGain = juce::Decibels::decibelsToGain (apvts.getRawParameterValue ("outputGain")->load());
     buffer.applyGain (outGain);
 
     const float rms = 0.5f * (buffer.getRMSLevel (0, 0, buffer.getNumSamples())
